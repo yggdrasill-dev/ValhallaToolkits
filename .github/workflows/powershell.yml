@@ -1,0 +1,21 @@
+name: Build & Push
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  BuildConfiguration: debug
+  NugetSource: https://www.myget.org/F/valhalla-ps/api/v2/package
+
+jobs:
+  build:
+    runs-on: self-hosted
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Push powershell module
+        run: Publish-Module -Path .\ValhallaToolkits -Repository "$($env:NugetSource)" -NuGetApiKey ${{ secrets.NUGETAPIKEY }}
