@@ -74,9 +74,17 @@ function Set-AllHosts
     }
 
     $ips = Get-AllContainerIPs
+    if ($null -eq $ips)
+    {
+        $ips = @();
+    }
 
     $vms = Get-HyperVHosts
-
+    if ($null -eq $vms)
+    {
+        $vms = @();
+    }
+    
     Set-Hosts -IPArray @($ips, $vms)
 }
 
