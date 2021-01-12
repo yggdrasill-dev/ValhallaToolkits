@@ -13,17 +13,10 @@ function Set-DockerHosts
     Set-Hosts -IPArray $ips
 }
 
-function Set-HyperVHosts
+function Get-HyperVHosts
 {
-    [CmdletBinding(SupportsShouldProcess)]
-    Param()
-
-    if (!$PSCmdlet.ShouldProcess('Target', 'Operation'))
-    {
-        return;
-    }
-
-    $vms = Get-VM | select -ExpandProperty NetworkAdapters | % {
+    $vms = Get-VM | select -ExpandProperty NetworkAdapters `
+    | % {
         $vmName = $_.VMName
 
         $_.IPAddresses `
@@ -46,6 +39,26 @@ function Set-HyperVHosts
             }
         }
     }
+
+    if ($null -eq $vms)
+    {
+        $vms = @();
+    }
+
+    return $vms
+}
+
+function Set-HyperVHosts
+{
+    [CmdletBinding(SupportsShouldProcess)]
+    Param()
+
+    if (!$PSCmdlet.ShouldProcess('Target', 'Operation'))
+    {
+        return;
+    }
+
+    $vms = Get-HyperVHosts
 
     Set-Hosts -IPArray $vms
 }
@@ -62,31 +75,9 @@ function Set-AllHosts
 
     $ips = Get-AllContainerIPs
 
-    $vms = Get-VM | select -ExpandProperty NetworkAdapters | % {
-        $vmName = $_.VMName
+    $vms = Get-HyperVHosts
 
-        $_.IPAddresses `
-        | ? {
-            [IPAddress]$ip = $_ -as [IPAddress]
-
-            if (($ip -as [bool]) -and $ip.AddressFamily -eq 'InterNetwork')
-            {
-                return $true
-            }
-            else
-            {
-                return $false
-            }
-        } `
-        | % {
-            [PSCustomObject]@{
-                Name = $vmName
-                Ip   = $_
-            }
-        }
-    }
-
-    Set-Hosts -IPArray @($ips, $vms) -WhatIf:$WhatIfPreference
+    Set-Hosts -IPArray @($ips, $vms)
 }
 
 function Set-Hosts
@@ -113,7 +104,7 @@ function Set-Hosts
 
     $startIgnore = $false
 
-    Get-Content $hostFilePath | Set-Content "$($env:USERPROFILE)\hostBackup" -WhatIf:$WhatIfPreference
+    Get-Content $hostFilePath | Set-Content "$($env:USERPROFILE)\hostBackup"
 
     $hostContent = Get-Content $hostFilePath | % {
         if (!$startIgnore)
@@ -146,7 +137,7 @@ function Set-Hosts
         }
     }
 
-    Clear-Content -Path $hostFilePath -WhatIf:$WhatIfPreference
+    Clear-Content -Path $hostFilePath
 
-    $hostContent | ac -Encoding:utf8 -WhatIf:$WhatIfPreference $hostFilePath
+    $hostContent | ac -Encoding:utf8 $hostFilePath
 }
