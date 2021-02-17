@@ -85,7 +85,7 @@ function Set-AllHosts
         $vms = @();
     }
     
-    Set-Hosts -IPArray @($ips, $vms)
+    Set-Hosts -IPArray ($ips + $vms)
 }
 
 function Set-Hosts
