@@ -104,7 +104,9 @@ function Push-AlphaPackage {
     param (
         [parameter(Mandatory, ValueFromPipeline, Position = 0)]
         [string] $ProjectPath,
-        [string] $Configuration = 'Debug'
+        [string] $Configuration = 'Debug',
+        [string] $Source,
+        [string] $ApiKey
     )
 
     process {
@@ -152,6 +154,6 @@ function Push-AlphaPackage {
         dotnet pack $projectTempPath -c $Configuration
 
         Remove-Item $projectTempPath
-        Push-Package "$projectFolder\bin\$Configuration\$packageId.$pushVersion-alpha.nupkg"
+        Push-Package "$projectFolder\bin\$Configuration\$packageId.$pushVersion-alpha.nupkg" -Source $Source -ApiKey $ApiKey
     }
 }
