@@ -1,4 +1,4 @@
-function Get-AllContainerIPs
+function Get-AllContainerIP
 {
     $format = '{{.Name}},{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}'
 

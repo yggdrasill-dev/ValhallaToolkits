@@ -1,20 +1,17 @@
-function Set-DockerHosts
-{
+function Set-DockerHost {
     [CmdletBinding(SupportsShouldProcess)]
     Param()
 
-    if (!$PSCmdlet.ShouldProcess('Target', 'Operation'))
-    {
+    if (!$PSCmdlet.ShouldProcess('Target', 'Operation')) {
         return;
     }
 
-    $ips = Get-AllContainerIPs
+    $ips = Get-AllContainerIP
 
     Set-Hosts -IPArray $ips
 }
 
-function Get-HyperVHosts
-{
+function Get-HyperVHost {
     $vms = Get-VM | select -ExpandProperty NetworkAdapters `
     | % {
         $vmName = $_.VMName
@@ -23,12 +20,10 @@ function Get-HyperVHosts
         | ? {
             [IPAddress]$ip = $_ -as [IPAddress]
 
-            if (($ip -as [bool]) -and $ip.AddressFamily -eq 'InterNetwork')
-            {
+            if (($ip -as [bool]) -and $ip.AddressFamily -eq 'InterNetwork') {
                 return $true
             }
-            else
-            {
+            else {
                 return $false
             }
         } `
@@ -40,64 +35,56 @@ function Get-HyperVHosts
         }
     }
 
-    if ($null -eq $vms)
-    {
+    if ($null -eq $vms) {
         $vms = @();
     }
 
     return $vms
 }
 
-function Set-HyperVHosts
-{
+function Set-HyperVHost {
     [CmdletBinding(SupportsShouldProcess)]
     Param()
 
-    if (!$PSCmdlet.ShouldProcess('Target', 'Operation'))
-    {
+    if (!$PSCmdlet.ShouldProcess('Target', 'Operation')) {
         return;
     }
 
-    $vms = Get-HyperVHosts
+    $vms = Get-HyperVHost
 
     Set-Hosts -IPArray $vms
 }
 
-function Set-AllHosts
-{
+function Set-AllHost {
     [CmdletBinding(SupportsShouldProcess)]
     Param()
 
-    if (!$PSCmdlet.ShouldProcess('Target', 'Operation'))
-    {
+    if (!$PSCmdlet.ShouldProcess('Target', 'Operation')) {
         return;
     }
 
-    $ips = Get-AllContainerIPs
-    if ($null -eq $ips)
-    {
+    $ips = Get-AllContainerIP
+    if ($null -eq $ips) {
         $ips = @();
     }
 
-    $vms = Get-HyperVHosts
-    if ($null -eq $vms)
-    {
+    $vms = Get-HyperVHost
+    if ($null -eq $vms) {
         $vms = @();
     }
-    
-    Set-Hosts -IPArray ($ips + $vms)
+
+    Set-Host -IPArray ($ips + $vms)
 }
 
-function Set-Hosts
-{
+function Set-Host {
     [CmdletBinding(SupportsShouldProcess)]
     param (
         [Parameter(Mandatory)]
-        [PSCustomObject[]]$IPArray
+        [PSCustomObject[]]
+        $IPArray
     )
 
-    if (!$PSCmdlet.ShouldProcess('Target', 'Operation'))
-    {
+    if (!$PSCmdlet.ShouldProcess('Target', 'Operation')) {
         return;
     }
 
@@ -105,8 +92,7 @@ function Set-Hosts
     $replaceDict = @{ }
     $configFilePath = "$($env:USERPROFILE)\HostAlias.psd1"
 
-    if (Test-Path $configFilePath)
-    {
+    if (Test-Path $configFilePath) {
         $replaceDict = Import-PowerShellDataFile $configFilePath
     }
 
@@ -115,30 +101,25 @@ function Set-Hosts
     Get-Content $hostFilePath | Set-Content "$($env:USERPROFILE)\hostBackup"
 
     $hostContent = Get-Content $hostFilePath | % {
-        if (!$startIgnore)
-        {
+        if (!$startIgnore) {
             $_
         }
 
-        if ($_ -match "# Docker Hosts")
-        {
+        if ($_ -match "# Docker Hosts") {
             $startIgnore = $true
             $IPArray `
             | ? { $null -ne $_.Name } `
             | % {
-                if ($replaceDict.ContainsKey($_.Name))
-                {
+                if ($replaceDict.ContainsKey($_.Name)) {
                     "$($_.Ip)`t$($replaceDict[$_.Name])"
                 }
-                else
-                {
+                else {
                     "$($_.Ip)`t$($_.Name)"
                 }
             }
         }
 
-        if ($_ -match "# End Hosts" -and $startIgnore -eq $true)
-        {
+        if ($_ -match "# End Hosts" -and $startIgnore -eq $true) {
             $_
 
             $startIgnore = $false

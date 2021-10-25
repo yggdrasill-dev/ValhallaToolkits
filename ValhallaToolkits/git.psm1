@@ -1,12 +1,10 @@
-function Get-GitAttributeList
-{
+function Get-GitAttributeList {
     $response = iwr https://gitattributes.io/api/list
 
     return $response.Content.Split(',')
 }
 
-function Get-GitAttributes
-{
+function Get-GitAttribute {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory)]
