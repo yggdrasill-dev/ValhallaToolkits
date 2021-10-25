@@ -8,7 +8,7 @@ on:
 
 env:
   BuildConfiguration: debug
-  NugetSource: https://www.myget.org/F/valhalla-ps/api/v3/index.json
+  NugetSource: Valhalla-PS
 
 jobs:
   build:
