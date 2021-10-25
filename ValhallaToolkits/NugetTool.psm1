@@ -41,7 +41,7 @@ function Get-NugetMaxVersion {
         Write-Verbose "PackageId: $PackageId"
 
         try {
-            $measure = Find-Package $PackageId -AllVersions -Source $Source -ProviderName NuGet `
+            $measure = Find-Package $PackageId -AllVersions -Source $Source -AllowPrereleaseVersions `
             | ? { $_.Name -eq $PackageId } `
             | % { [Version]$_.Version.Split('-')[0] } `
             | measure -Maximum
