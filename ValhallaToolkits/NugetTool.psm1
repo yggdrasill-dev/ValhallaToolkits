@@ -140,7 +140,7 @@ function Push-AlphaPackage {
         }
 
         $projectFolder = $projectFile.Directory.FullName
-        $pushVersion = Get-NugetMaxVersion $packageId | Get-IncrementVersion
+        $pushVersion = Get-NugetMaxVersion $packageId -Source $Source | Get-IncrementVersion
 
         $projectTempPath = "$projectFolder\$sessionId$($projectFile.Extension)"
 
