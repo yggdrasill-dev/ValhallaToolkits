@@ -183,7 +183,7 @@ function Push-AlphaPackage {
 }
 
 function Get-NugetSource {
-    [OutputType(hashtable)]
+    [OutputType([hashtable])]
     Param()
 
     process {
