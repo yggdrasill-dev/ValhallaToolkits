@@ -11,6 +11,14 @@ function Push-Package {
         $ErrorActionPreference = "Stop"
 
         if ([String]::IsNullOrEmpty($Path) -eq $false) {
+            $nugetSources = Get-NugetSource
+
+            $sourceUrl = $Source
+
+            if($nugetSources.ContainsKey($Source)) {
+                $sourceUrl = $nugetSources[$Source]
+            }
+
             $pkgFile = Get-Item $Path
 
             Find-Package -Source $pkgFile.DirectoryName
@@ -18,7 +26,7 @@ function Push-Package {
             | ? { $_.PackageFilename -eq $pkgFile.Name } `
             | select -First 1
 
-            $maxVersion = Get-NugetMaxVersion -Source $Source -PackageId $info.Name
+            $maxVersion = Get-NugetMaxVersion -Source $sourceUrl -PackageId $info.Name
             $currentVersion = [Version]($info.Version.Split('-') | Select-Object -First 1)
 
             if ($currentVersion -le $maxVersion) {
@@ -41,7 +49,15 @@ function Get-NugetMaxVersion {
         Write-Verbose "PackageId: $PackageId"
 
         try {
-            $measure = Find-Package $PackageId -AllVersions -Source $Source -AllowPrereleaseVersions `
+            $nugetSources = Get-NugetSource
+
+            $sourceUrl = $Source
+
+            if($nugetSources.ContainsKey($Source)) {
+                $sourceUrl = $nugetSources[$Source]
+            }
+
+            $measure = Find-Package $PackageId -AllVersions -Source $sourceUrl -AllowPrereleaseVersions `
             | ? { $_.Name -eq $PackageId } `
             | % { [Version]$_.Version.Split('-')[0] } `
             | measure -Maximum
@@ -112,14 +128,22 @@ function Push-AlphaPackage {
     process {
         $ErrorActionPreference = 'Stop'
 
+        $nugetSources = Get-NugetSource
+
+        $sourceUrl = $Source
+
+        if($nugetSources.ContainsKey($Source)) {
+            $sourceUrl = $nugetSources[$Source]
+        }
+
         $sessionId = [Guid]::NewGuid()
 
         $projectFile = Get-Item $ProjectPath
         [xml]$projectDoc = Get-Content $ProjectPath
         $propGroup = $projectDoc.CreateElement('PropertyGroup')
 
-        $packageId = Select-Xml -Path $ProjectPath -XPath '//PackageId' | 
-        Select-Object -First 1 -ExpandProperty Node | % { $_.InnerXml }
+        $packageId = Select-Xml -Path $ProjectPath -XPath '//PackageId' `
+        | Select-Object -First 1 -ExpandProperty Node | % { $_.InnerXml }
 
         if ([string]::IsNullOrWhiteSpace($packageId)) {
             $packageId = $projectFile.BaseName
@@ -130,8 +154,8 @@ function Push-AlphaPackage {
             $propGroup.AppendChild($packageIdNode) | Out-Null
         }
 
-        $assemblyName = Select-Xml -Path $ProjectPath -XPath '//AssemblyName' | 
-        Select-Object -First 1 -ExpandProperty Node | % { $_.InnerXml }
+        $assemblyName = Select-Xml -Path $ProjectPath -XPath '//AssemblyName' `
+        | Select-Object -First 1 -ExpandProperty Node | % { $_.InnerXml }
 
         if ([string]::IsNullOrWhiteSpace($assemblyName)) {
             $assemblyNameNode = $projectDoc.CreateElement('AssemblyName')
@@ -140,7 +164,7 @@ function Push-AlphaPackage {
         }
 
         $projectFolder = $projectFile.Directory.FullName
-        $pushVersion = Get-NugetMaxVersion $packageId -Source $Source | Get-IncrementVersion
+        $pushVersion = Get-NugetMaxVersion $packageId -Source $sourceUrl | Get-IncrementVersion
 
         $projectTempPath = "$projectFolder\$sessionId$($projectFile.Extension)"
 
@@ -154,6 +178,28 @@ function Push-AlphaPackage {
         dotnet pack $projectTempPath -c $Configuration
 
         Remove-Item $projectTempPath
-        Push-Package "$projectFolder\bin\$Configuration\$packageId.$pushVersion-alpha.nupkg" -Source $Source -ApiKey $ApiKey
+        Push-Package "$projectFolder\bin\$Configuration\$packageId.$pushVersion-alpha.nupkg" -Source $sourceUrl -ApiKey $ApiKey
+    }
+}
+
+function Get-NugetSource {
+    [OutputType(hashtable)]
+    Param()
+
+    process {
+        $arr = dotnet nuget list source `
+        | select -Skip 1 `
+        | % { $_.Trim() } `
+        | % { $_.Split('[') `
+        | select -First 1 } `
+        | % { $_ -replace '\d+\.', '' } `
+        | % {$_.Trim() }
+
+        $dict = @{}
+        for ($i = 0; $i -lt $arr.Count; $i+=2) {
+            $dict[$arr[$i]] = $arr[$i + 1]
+        }
+
+        return $dict
     }
 }
