@@ -15,7 +15,7 @@ function Push-Package {
 
             $sourceUrl = $Source
 
-            if($nugetSources.ContainsKey($Source)) {
+            if ($nugetSources.ContainsKey($Source)) {
                 $sourceUrl = $nugetSources[$Source]
             }
 
@@ -46,6 +46,8 @@ function Get-NugetMaxVersion {
     )
 
     process {
+        $ErrorActionPreference = "Stop"
+
         Write-Verbose "PackageId: $PackageId"
 
         try {
@@ -53,8 +55,12 @@ function Get-NugetMaxVersion {
 
             $sourceUrl = $Source
 
-            if($nugetSources.ContainsKey($Source)) {
+            if ($nugetSources.ContainsKey($Source)) {
                 $sourceUrl = $nugetSources[$Source]
+            }
+
+            if ($sourceUrl -eq '') {
+                Remove-Variable sourceUrl
             }
 
             $measure = Find-Package $PackageId -AllVersions -Source $sourceUrl -AllowPrereleaseVersions `
@@ -132,7 +138,7 @@ function Push-AlphaPackage {
 
         $sourceUrl = $Source
 
-        if($nugetSources.ContainsKey($Source)) {
+        if ($nugetSources.ContainsKey($Source)) {
             $sourceUrl = $nugetSources[$Source]
         }
 
@@ -191,12 +197,12 @@ function Get-NugetSource {
         | select -Skip 1 `
         | % { $_.Trim() } `
         | % { $_.Split('[') `
-        | select -First 1 } `
+            | select -First 1 } `
         | % { $_ -replace '\d+\.', '' } `
-        | % {$_.Trim() }
+        | % { $_.Trim() }
 
         $dict = @{}
-        for ($i = 0; $i -lt $arr.Count; $i+=2) {
+        for ($i = 0; $i -lt $arr.Count; $i += 2) {
             $dict[$arr[$i]] = $arr[$i + 1]
         }
 
