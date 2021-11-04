@@ -32,8 +32,9 @@ function Push-Package {
             if ($currentVersion -le $maxVersion) {
                 Write-Error "The package version($currentVersion) lower feed's version($maxVersion)."
             }
-
-            dotnet nuget push $Path --skip-duplicate -s $Source -k $ApiKey
+            else {
+                dotnet nuget push $Path --skip-duplicate -s $Source -k $ApiKey
+            }
         }
     }
 }
@@ -142,48 +143,15 @@ function Push-AlphaPackage {
             $sourceUrl = $nugetSources[$Source]
         }
 
-        $sessionId = [Guid]::NewGuid()
-
         $projectFile = Get-Item $ProjectPath
-        [xml]$projectDoc = Get-Content $ProjectPath
-        $propGroup = $projectDoc.CreateElement('PropertyGroup')
-
-        $packageId = Select-Xml -Path $ProjectPath -XPath '//PackageId' `
-        | Select-Object -First 1 -ExpandProperty Node | % { $_.InnerXml }
-
-        if ([string]::IsNullOrWhiteSpace($packageId)) {
-            $packageId = $projectFile.BaseName
-
-            $packageIdNode = $projectDoc.CreateElement('PackageId')
-            $packageIdNode.InnerText = $packageId
-
-            $propGroup.AppendChild($packageIdNode) | Out-Null
-        }
-
-        $assemblyName = Select-Xml -Path $ProjectPath -XPath '//AssemblyName' `
-        | Select-Object -First 1 -ExpandProperty Node | % { $_.InnerXml }
-
-        if ([string]::IsNullOrWhiteSpace($assemblyName)) {
-            $assemblyNameNode = $projectDoc.CreateElement('AssemblyName')
-            $assemblyNameNode.InnerText = $projectFile.BaseName
-            $propGroup.AppendChild($assemblyNameNode) | Out-Null
-        }
-
         $projectFolder = $projectFile.Directory.FullName
+
+        $packageId = Get-PackageId -ProjectPath $ProjectPath
+
         $pushVersion = Get-NugetMaxVersion $packageId -Source $sourceUrl | Get-IncrementVersion
 
-        $projectTempPath = "$projectFolder\$sessionId$($projectFile.Extension)"
+        dotnet pack $ProjectPath -c $Configuration -p:Version="$pushVersion-alpha"
 
-        ($projectDoc | Select-Xml -XPath '//Version').Node.InnerText = "$pushVersion-alpha"
-
-        $projectDoc.DocumentElement.AppendChild($propGroup) | Out-Null
-
-        $projectDoc.Save($projectTempPath)
-        Write-Verbose "產生暫存專案檔: $projectTempPath"
-
-        dotnet pack $projectTempPath -c $Configuration
-
-        Remove-Item $projectTempPath
         Push-Package "$projectFolder\bin\$Configuration\$packageId.$pushVersion-alpha.nupkg" -Source $sourceUrl -ApiKey $ApiKey
     }
 }
@@ -196,8 +164,7 @@ function Get-NugetSource {
         $arr = dotnet nuget list source `
         | select -Skip 1 `
         | % { $_.Trim() } `
-        | % { $_.Split('[') `
-            | select -First 1 } `
+        | % { $_.Split('[') | select -First 1 } `
         | % { $_ -replace '\d+\.', '' } `
         | % { $_.Trim() }
 

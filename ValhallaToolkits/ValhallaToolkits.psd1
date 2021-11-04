@@ -12,7 +12,7 @@
     RootModule        = 'PSModule.psm1'
 
     # Version number of this module.
-    ModuleVersion     = '0.0.13'
+    ModuleVersion     = '0.0.14'
 
     # Supported PSEditions
     # CompatiblePSEditions = @()
@@ -121,7 +121,7 @@
             # LicenseUri = ''
 
             # A URL to the main website for this project.
-            ProjectUri = ''
+            ProjectUri = 'https://github.com/yggdrasill-dev/ValhallaToolkits'
 
             # A URL to an icon representing this module.
             # IconUri = ''
