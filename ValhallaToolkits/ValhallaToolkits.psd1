@@ -12,7 +12,7 @@
     RootModule        = 'PSModule.psm1'
 
     # Version number of this module.
-    ModuleVersion     = '0.0.15'
+    ModuleVersion     = '0.0.16'
 
     # Supported PSEditions
     # CompatiblePSEditions = @()
@@ -77,12 +77,12 @@
 
     # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
     FunctionsToExport = @(
-        'Get-AllContainerIPs',
-        'Get-HyperVHosts',
-        'Set-DockerHosts',
-        'Set-HyperVHosts',
-        'Set-AllHosts',
-        'Update-AllDotNetTools',
+        'Get-AllContainerIP',
+        'Get-HyperVHost',
+        'Set-DockerHost',
+        'Set-HyperVHost',
+        'Set-AllHost',
+        'Update-AllDotNetTool',
         'Get-GitAttributeList',
         'Get-GitAttributes',
         'Push-Package',
