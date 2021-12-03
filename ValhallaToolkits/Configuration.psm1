@@ -1,4 +1,4 @@
-$local:ConfigPath = "$env:USERPROFILE\.valhalla"
+$ConfigPath = "$env:USERPROFILE\.valhalla"
 
 if (!(Test-Path $ConfigPath)) {
     mkdir "$ConfigPath"
@@ -8,12 +8,14 @@ function Read-Configuration {
     param()
 
     process {
+        $result = @{}
+
         if (Test-Path "$ConfigPath\config.json") {
-            return gc "$ConfigPath\config.json" | ConvertFrom-Json
+            $obj =  gc "$ConfigPath\config.json" | ConvertFrom-Json
+            $obj.psobject.properties | % { $result[$_.Name] = $_.Value }
         }
-        else {
-            return @{}
-        }
+
+        return $result
     }
 }
 
@@ -37,10 +39,6 @@ function Write-Configuration {
     }
 }
 
-$local:ValhallaConfig = @{};
+$ValhallaConfig = Read-Configuration
 
-if (Test-Path "$ConfigPath\config.json") {
-    $local:ValhallaConfig = Read-Configuration
-}
-
-Export-ModuleMember -Function 'Read-Configuration', 'Write-Configuration'
+Export-ModuleMember -Function 'Read-Configuration', 'Write-Configuration' -Variable 'ValhallaConfig'

@@ -16,16 +16,12 @@ function Set-DefaultNugetSource {
             return;
         }
 
-        $ValhallaConfig = Read-Configuration
-
         $ValhallaConfig.Nuget = @{
             'Source' = $Source
             'ApiKey' = $ApiKey
         }
 
         Write-Configuration $ValhallaConfig
-
-        $local:ValhallaConfig = $ValhallaConfig
     }
 }
 function Push-Package {
