@@ -29,8 +29,8 @@ function Push-Package {
         [parameter(Mandatory, ValueFromPipeline, Position = 0)]
         [ValidateScript( { if ($_) { Test-Path $_ } })]
         [string] $Path,
-        [string] $Source = $local:ValhallaConfig.Nuget.Source,
-        [string] $ApiKey = $local:ValhallaConfig.Nuget.ApiKey
+        [string] $Source = $ValhallaConfig.Nuget.Source,
+        [string] $ApiKey = $ValhallaConfig.Nuget.ApiKey
     )
 
     process {
@@ -69,7 +69,7 @@ function Get-NugetMaxVersion {
     param (
         [Parameter(Mandatory, ValueFromPipeline, Position = 0)]
         [string] $PackageId,
-        [string] $Source = $local:ValhallaConfig.Nuget.Source
+        [string] $Source = $ValhallaConfig.Nuget.Source
     )
 
     process {
@@ -154,8 +154,8 @@ function Push-AlphaPackage {
         [parameter(Mandatory, ValueFromPipeline, Position = 0)]
         [string] $ProjectPath,
         [string] $Configuration = 'Debug',
-        [string] $Source = $local:ValhallaConfig.Nuget.Source,
-        [string] $ApiKey = $local:ValhallaConfig.Nuget.ApiKey
+        [string] $Source = $ValhallaConfig.Nuget.Source,
+        [string] $ApiKey = $ValhallaConfig.Nuget.ApiKey
     )
 
     process {
