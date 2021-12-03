@@ -6,6 +6,8 @@ function Update-AllDotNetTool {
     )
 
     process {
+        $ErrorActionPreference = 'Stop'
+
         if (!$PSCmdlet.ShouldProcess('Target', 'Operation')) {
             return;
         }

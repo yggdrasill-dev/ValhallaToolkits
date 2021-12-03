@@ -97,6 +97,7 @@ function Set-Host {
     }
 
     $startIgnore = $false
+    $findTag = $false
 
     Get-Content $hostFilePath | Set-Content "$($env:USERPROFILE)\hostBackup"
 
@@ -107,6 +108,15 @@ function Set-Host {
 
         if ($_ -match "# Docker Hosts") {
             $startIgnore = $true
+        }
+
+        if ($_ -match "# End Hosts" -and $startIgnore -eq $true) {
+            $startIgnore = $false
+        }
+
+        if ($_ -match "# Host IPs") {
+            $startIgnore = $true
+            $findTag = $true
             $IPArray `
             | ? { $null -ne $_.Name } `
             | % {
@@ -119,10 +129,25 @@ function Set-Host {
             }
         }
 
-        if ($_ -match "# End Hosts" -and $startIgnore -eq $true) {
+        if ($_ -match "# End IPs" -and $startIgnore -eq $true) {
             $_
 
             $startIgnore = $false
+        }
+
+        if ($findTag -eq $false) {
+            "# Host IPs"
+            $IPArray `
+            | ? { $null -ne $_.Name } `
+            | % {
+                if ($replaceDict.ContainsKey($_.Name)) {
+                    "$($_.Ip)`t$($replaceDict[$_.Name])"
+                }
+                else {
+                    "$($_.Ip)`t$($_.Name)"
+                }
+            }
+            "# End IPs"
         }
     }
 

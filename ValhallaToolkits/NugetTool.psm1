@@ -1,10 +1,40 @@
+Import-Module $PSScriptRoot\Configuration.psm1
+
+function Set-DefaultNugetSource {
+    [CmdletBinding(SupportsShouldProcess)]
+    param (
+        [Parameter(Mandatory)]
+        [string] $Source,
+        [Parameter(Mandatory)]
+        [string] $ApiKey
+    )
+
+    process {
+        $ErrorActionPreference = 'Stop'
+
+        if (!$PSCmdlet.ShouldProcess('Target', 'Operation')) {
+            return;
+        }
+
+        $ValhallaConfig = Read-Configuration
+
+        $ValhallaConfig.Nuget = @{
+            'Source' = $Source
+            'ApiKey' = $ApiKey
+        }
+
+        Write-Configuration $ValhallaConfig
+
+        $local:ValhallaConfig = $ValhallaConfig
+    }
+}
 function Push-Package {
     param (
         [parameter(Mandatory, ValueFromPipeline, Position = 0)]
         [ValidateScript( { if ($_) { Test-Path $_ } })]
         [string] $Path,
-        [string] $Source,
-        [string] $ApiKey
+        [string] $Source = $local:ValhallaConfig.Nuget.Source,
+        [string] $ApiKey = $local:ValhallaConfig.Nuget.ApiKey
     )
 
     process {
@@ -43,7 +73,7 @@ function Get-NugetMaxVersion {
     param (
         [Parameter(Mandatory, ValueFromPipeline, Position = 0)]
         [string] $PackageId,
-        [string] $Source
+        [string] $Source = $local:ValhallaConfig.Nuget.Source
     )
 
     process {
@@ -128,8 +158,8 @@ function Push-AlphaPackage {
         [parameter(Mandatory, ValueFromPipeline, Position = 0)]
         [string] $ProjectPath,
         [string] $Configuration = 'Debug',
-        [string] $Source,
-        [string] $ApiKey
+        [string] $Source = $local:ValhallaConfig.Nuget.Source,
+        [string] $ApiKey = $local:ValhallaConfig.Nuget.ApiKey
     )
 
     process {
