@@ -12,7 +12,7 @@
     RootModule        = 'PSModule.psm1'
 
     # Version number of this module.
-    ModuleVersion     = '0.0.19'
+    ModuleVersion     = '0.0.20'
 
     # Supported PSEditions
     # CompatiblePSEditions = @()
@@ -84,7 +84,7 @@
         'Set-AllHost',
         'Update-AllDotNetTool',
         'Get-GitAttributeList',
-        'Get-GitAttributes',
+        'Get-GitAttribute',
         'Push-Package',
         'Get-NugetMaxVersion',
         'Get-IncrementVersion',
