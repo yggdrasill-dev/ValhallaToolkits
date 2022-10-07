@@ -26,7 +26,9 @@ function Export-Kubeconfig {
         [Parameter(Mandatory, ValueFromPipeline)]
         [string] $Namespace,
         [Parameter(Mandatory, ValueFromPipeline)]
-        [string] $AccountName
+        [string] $AccountName,
+        [Parameter(ValueFromPipeline)]
+        [string] $ContextName = ''
     )
 
     process {
@@ -38,16 +40,21 @@ function Export-Kubeconfig {
                 $(kubectl -n $Namespace get secret/$userTokenName -o=go-template='{{.data.token}}')))
 
         $currentConfig = kubectl config view --raw --minify | ConvertFrom-Yaml
+        $configContextName = $currentConfig['current-context']
+        if ($ContextName -ne '') {
+            $configContextName = $ContextName
+        }
+
         $generateConfig = @"
         {
             "apiVersion": "v1",
             "kind": "Config",
-            "current-context": "$($currentConfig["current-context"])",
+            "current-context": "$configContextName",
             "contexts":[
                 {
-                    "name": "$($currentConfig['current-context'])",
+                    "name": "$configContextName",
                     "context": {
-                        "cluster": "$($currentConfig["current-context"])",
+                        "cluster": "$configContextName",
                         "user": "$AccountName",
                         "namespace": "$Namespace"
                     }
@@ -55,7 +62,7 @@ function Export-Kubeconfig {
             ],
             "clusters":[
                 {
-                    "name": "$($currentConfig['current-context'])",
+                    "name": "$configContextName",
                     "cluster": {
                         "certificate-authority-data": "$($currentConfig.clusters[0].cluster['certificate-authority-data'])",
                         "server": "$($currentConfig.clusters[0].cluster['server'])"
