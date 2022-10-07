@@ -9,6 +9,7 @@ on:
 env:
   BuildConfiguration: debug
   NugetSource: Valhalla-PS
+  DOTNET_CLI_UI_LANGUAGE: en_US
 
 jobs:
   build:
