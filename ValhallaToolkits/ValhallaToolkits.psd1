@@ -12,7 +12,7 @@
     RootModule        = 'PSModule.psm1'
 
     # Version number of this module.
-    ModuleVersion     = '0.0.23'
+    ModuleVersion     = '0.0.24'
 
     # Supported PSEditions
     # CompatiblePSEditions = @()
@@ -93,6 +93,7 @@
         'Set-DefaultNugetSource',
         'Set-MergeKubeconfig',
         'Export-Kubeconfig',
+        'Export-Kubeconfig2',
         'Export-CurrentKubeconfig',
         'Switch-KubeContext',
         'Switch-KubeNamespace'
