@@ -113,7 +113,7 @@ function Export-Kubeconfig2 {
     process {
         $ErrorActionPreference = 'Stop'
 
-        $userTokenValue = kubectl -n $Namespace create token $userTokenName --duration $Duration
+        $userTokenValue = kubectl -n $Namespace create token $AccountName --duration $Duration
 
         $currentConfig = kubectl config view --raw --minify | ConvertFrom-Yaml
         $configContextName = $currentConfig['current-context']
