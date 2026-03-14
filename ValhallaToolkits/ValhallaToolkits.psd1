@@ -12,7 +12,7 @@
     RootModule        = 'PSModule.psm1'
 
     # Version number of this module.
-    ModuleVersion     = '0.0.26'
+    ModuleVersion     = '0.0.27'
 
     # Supported PSEditions
     # CompatiblePSEditions = @()
@@ -69,7 +69,6 @@
     NestedModules     = @(
         '.\Containers.psm1',
         '.\Hosts.psm1',
-        '.\DotNetTool.psm1',
         '.\git.psm1',
         '.\NugetTool.psm1',
         '.\Kubernetes.psm1'
@@ -82,7 +81,6 @@
         'Set-DockerHost',
         'Set-HyperVHost',
         'Set-AllHost',
-        'Update-AllDotNetTool',
         'Get-GitAttributeList',
         'Get-GitAttribute',
         'Push-Package',

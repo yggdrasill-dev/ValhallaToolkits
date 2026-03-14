@@ -1,6 +1,6 @@
 # ValhallaToolkits
 
-ValhallaToolkits 是一組以 PowerShell 撰寫的開發輔助命令，包含 Docker 與 Hyper-V hosts 管理、.NET tool 更新、NuGet 套件推送、Git attributes 查詢，以及 Kubernetes kubeconfig 操作。
+ValhallaToolkits 是一組以 PowerShell 撰寫的開發輔助命令，包含 Docker 與 Hyper-V hosts 管理、NuGet 套件推送、Git attributes 查詢，以及 Kubernetes kubeconfig 操作。
 
 ## 快速開始
 
@@ -118,26 +118,6 @@ Set-AllHost
 - 會在 hosts 中使用 `# Host IPs` 與 `# End IPs` 區段管理內容
 - 若有 `HostAlias.psd1`，會以對應名稱寫入，而不是直接使用容器或 VM 名稱
 
-### .NET Tool
-
-#### Update-AllDotNetTool
-
-用途：更新已安裝的 .NET tools。
-
-更新全域 tools：
-
-```powershell
-Update-AllDotNetTool
-```
-
-更新本機 manifest tools：
-
-```powershell
-Update-AllDotNetTool -Local
-```
-
-實作在 [ValhallaToolkits/DotNetTool.psm1](ValhallaToolkits/DotNetTool.psm1#L1)。
-
 ### Git
 
 #### Get-GitAttributeList
@@ -231,15 +211,14 @@ Push-AlphaPackage -ProjectPath .\src\MyLibrary\MyLibrary.csproj -Source nuget.or
 
 - 讀取 `PackageId`
 - 取得目前 feed 上最大版本後自動加一
-- 將暫存專案檔的 `Version` 改成 `新版號-alpha`
-- 執行 `dotnet pack`
-- 推送 `bin\<Configuration>\<PackageId>.<Version>-alpha.nupkg`
+- 使用 `dotnet pack --version` 直接指定 `新版號-alpha`
+- 使用 `dotnet pack` 的預設輸出路徑產生套件後再推送
 
 使用前請注意：
 
 - 若未提供 `-Source` 與 `-ApiKey`，會改用設定檔中的預設值
 - 專案檔需要可正常被 `Select-Xml` 與 `dotnet pack` 處理
-- 目前實作會直接修改暫存專案檔中的 `Version` 節點，因此專案檔中應存在 `Version` 節點
+- 不再需要建立暫存 `.csproj` 或依賴專案檔內既有 `Version` 節點
 
 ### Kubernetes
 
@@ -298,9 +277,8 @@ Kubernetes 相關命令實作在 [ValhallaToolkits/Kubernetes.psm1](ValhallaTool
 
 ## 已知限制
 
-- [ValhallaToolkits/Hosts.psm1](ValhallaToolkits/Hosts.psm1#L11) 與 [ValhallaToolkits/Hosts.psm1](ValhallaToolkits/Hosts.psm1#L55) 目前呼叫的是 `Set-Hosts`，但實作檔內定義的是 `Set-Host`。如果你在使用 `Set-DockerHost` 或 `Set-HyperVHost` 時遇到錯誤，先檢查這裡。
 - `Set-AllHost`、`Set-DockerHost`、`Set-HyperVHost` 與 `Set-MergeKubeconfig` 都會修改本機狀態，執行前請確認目前 shell 有足夠權限。
-- `Push-AlphaPackage` 依賴專案檔版本結構與預設輸出路徑；如果專案有自訂 pack 行為，可能需要手動指定或調整實作。
+- `Push-AlphaPackage` 仍依賴 `dotnet pack` 以預設路徑輸出 `<PackageId>.<Version>.nupkg`；如果專案有自訂 pack 行為，可能需要調整實作。
 
 ## 建議使用方式
 
