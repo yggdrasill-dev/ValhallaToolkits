@@ -8,7 +8,7 @@ function Set-DockerHost {
 
     $ips = Get-AllContainerIP
 
-    Set-Hosts -IPArray $ips
+    Set-Host -IPArray $ips
 }
 
 function Get-HyperVHost {
@@ -52,7 +52,7 @@ function Set-HyperVHost {
 
     $vms = Get-HyperVHost
 
-    Set-Hosts -IPArray $vms
+    Set-Host -IPArray $vms
 }
 
 function Set-AllHost {
@@ -88,6 +88,8 @@ function Set-Host {
         return;
     }
 
+    $null = $IPArray.Count
+
     $hostFilePath = "$Env:windir\System32\drivers\etc\hosts"
     $replaceDict = @{ }
     $configFilePath = "$($env:USERPROFILE)\HostAlias.psd1"
@@ -98,6 +100,19 @@ function Set-Host {
 
     $startIgnore = $false
     $findTag = $false
+
+    $hostEntries = foreach ($item in $IPArray) {
+        if ($null -eq $item.Name) {
+            continue
+        }
+
+        if ($replaceDict.ContainsKey($item.Name)) {
+            "$($item.Ip)`t$($replaceDict[$item.Name])"
+        }
+        else {
+            "$($item.Ip)`t$($item.Name)"
+        }
+    }
 
     Get-Content $hostFilePath | Set-Content "$($env:USERPROFILE)\hostBackup"
 
@@ -117,16 +132,7 @@ function Set-Host {
         if ($_ -match "# Host IPs") {
             $startIgnore = $true
             $findTag = $true
-            $IPArray `
-            | ? { $null -ne $_.Name } `
-            | % {
-                if ($replaceDict.ContainsKey($_.Name)) {
-                    "$($_.Ip)`t$($replaceDict[$_.Name])"
-                }
-                else {
-                    "$($_.Ip)`t$($_.Name)"
-                }
-            }
+            $hostEntries
         }
 
         if ($_ -match "# End IPs" -and $startIgnore -eq $true) {
@@ -135,20 +141,12 @@ function Set-Host {
             $startIgnore = $false
         }
 
-        if ($findTag -eq $false) {
-            "# Host IPs"
-            $IPArray `
-            | ? { $null -ne $_.Name } `
-            | % {
-                if ($replaceDict.ContainsKey($_.Name)) {
-                    "$($_.Ip)`t$($replaceDict[$_.Name])"
-                }
-                else {
-                    "$($_.Ip)`t$($_.Name)"
-                }
-            }
-            "# End IPs"
-        }
+    }
+
+    if ($findTag -eq $false) {
+        $hostContent += "# Host IPs"
+        $hostContent += $hostEntries
+        $hostContent += "# End IPs"
     }
 
     Clear-Content -Path $hostFilePath
