@@ -1,3 +1,13 @@
+<#
+.SYNOPSIS
+將 Docker 容器名稱與 IP 同步到 Windows hosts 檔。
+
+.DESCRIPTION
+先讀取目前 Docker 容器 IP，再交由內部的 Set-Host 邏輯更新 hosts 檔中的管理區段。
+
+.EXAMPLE
+Set-DockerHost
+#>
 function Set-DockerHost {
     [CmdletBinding(SupportsShouldProcess)]
     Param()
@@ -11,6 +21,19 @@ function Set-DockerHost {
     Set-Host -IPArray $ips
 }
 
+<#
+.SYNOPSIS
+列出 Hyper-V 虛擬機器的 IPv4 位址。
+
+.DESCRIPTION
+讀取 Hyper-V VM 的網路介面，篩出 IPv4 位址後，回傳包含 Name 與 Ip 欄位的物件集合。
+
+.EXAMPLE
+Get-HyperVHost
+
+.OUTPUTS
+System.Management.Automation.PSCustomObject[]
+#>
 function Get-HyperVHost {
     $vms = Get-VM | select -ExpandProperty NetworkAdapters `
     | % {
@@ -42,6 +65,16 @@ function Get-HyperVHost {
     return $vms
 }
 
+<#
+.SYNOPSIS
+將 Hyper-V 虛擬機器名稱與 IP 同步到 Windows hosts 檔。
+
+.DESCRIPTION
+先讀取目前 Hyper-V VM 的 IPv4 位址，再交由內部的 Set-Host 邏輯更新 hosts 檔中的管理區段。
+
+.EXAMPLE
+Set-HyperVHost
+#>
 function Set-HyperVHost {
     [CmdletBinding(SupportsShouldProcess)]
     Param()
@@ -55,6 +88,16 @@ function Set-HyperVHost {
     Set-Host -IPArray $vms
 }
 
+<#
+.SYNOPSIS
+同時將 Docker 與 Hyper-V 的名稱與 IP 同步到 Windows hosts 檔。
+
+.DESCRIPTION
+整合 Docker 容器與 Hyper-V 虛擬機器的位址資訊，並用同一段 hosts 管理邏輯寫入 Windows hosts 檔。
+
+.EXAMPLE
+Set-AllHost
+#>
 function Set-AllHost {
     [CmdletBinding(SupportsShouldProcess)]
     Param()

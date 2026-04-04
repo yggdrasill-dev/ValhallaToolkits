@@ -1,6 +1,6 @@
 # ValhallaToolkits
 
-ValhallaToolkits 是一組以 PowerShell 撰寫的開發輔助命令，包含 Docker 與 Hyper-V hosts 管理、NuGet 套件推送、Git attributes 查詢，以及 Kubernetes kubeconfig 操作。
+ValhallaToolkits 是一組以 PowerShell 撰寫的開發輔助命令，包含 Docker 與 Hyper-V hosts 管理、目前 shell PATH 更新、NuGet 套件推送、Git attributes 查詢，以及 Kubernetes kubeconfig 操作。
 
 ## 快速開始
 
@@ -137,6 +137,25 @@ Get-GitAttribute -Types csharp,visualstudio
 ```
 
 實作在 [ValhallaToolkits/git.psm1](ValhallaToolkits/git.psm1#L1)。
+
+### Environment
+
+#### Update-ShellPath
+
+用途：重新載入目前 shell 的 PATH，讓已寫入 Windows User 或 Machine PATH 的新工具可立即在目前 PowerShell session 中使用。
+
+```powershell
+Update-ShellPath
+Update-ShellPath -PassThru
+```
+
+使用前請注意：
+
+- 這個命令只會更新目前 shell 的 PATH，不會回寫系統環境變數
+- 只有安裝程式已經把路徑寫進 Windows 的 User 或 Machine PATH 時，重新載入後才會生效
+- 若工具需要額外 shell 初始化步驟，單純更新 PATH 不足以讓命令可用
+
+實作在 [ValhallaToolkits/Environment.psm1](ValhallaToolkits/Environment.psm1#L1)。
 
 ### NuGet
 

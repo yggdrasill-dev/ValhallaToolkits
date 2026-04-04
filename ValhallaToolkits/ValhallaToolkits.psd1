@@ -12,7 +12,7 @@
     RootModule        = 'PSModule.psm1'
 
     # Version number of this module.
-    ModuleVersion     = '0.0.27'
+    ModuleVersion     = '0.0.28'
 
     # Supported PSEditions
     # CompatiblePSEditions = @()
@@ -70,6 +70,7 @@
         '.\Containers.psm1',
         '.\Hosts.psm1',
         '.\git.psm1',
+        '.\Environment.psm1',
         '.\NugetTool.psm1',
         '.\Kubernetes.psm1'
     )
@@ -81,6 +82,7 @@
         'Set-DockerHost',
         'Set-HyperVHost',
         'Set-AllHost',
+        'Update-ShellPath',
         'Get-GitAttributeList',
         'Get-GitAttribute',
         'Push-Package',
