@@ -82,4 +82,12 @@ jobs:
             Register-PSResourceRepository -Name $env:NugetSource -Uri $env:NugetSourceUrl -Trusted
           }
 
-          Publish-PSResource -Path .\ValhallaToolkits -Repository $env:NugetSource -ApiKey ${{ secrets.NUGETAPIKEY }}
+          $manifest = Test-ModuleManifest -Path .\ValhallaToolkits\ValhallaToolkits.psd1
+          $existing = Find-PSResource -Name $manifest.Name -Version "[$($manifest.Version)]" -Repository $env:NugetSource -ErrorAction SilentlyContinue
+
+          if ($existing) {
+            Write-Host "Version $($manifest.Version) of $($manifest.Name) already exists on $($env:NugetSource); skipping publish."
+          }
+          else {
+            Publish-PSResource -Path .\ValhallaToolkits -Repository $env:NugetSource -ApiKey ${{ secrets.NUGETAPIKEY }}
+          }

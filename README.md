@@ -322,7 +322,7 @@ $config.TestResult.OutputPath = 'testResults.xml'
 Invoke-Pester -Configuration $config
 ```
 
-GitHub Actions（`.github/workflows/powershell.yml`）會在 `test` job 執行完整測試，並用 [`dorny/test-reporter`](https://github.com/dorny/test-reporter) 解析 `testResults.xml`（JUnitXml 格式）產生可展開的完整測試報告，掛在該次 workflow run 的 Checks／Summary 頁籤，列出每一項測試（含通過的），不用下載檔案就能看；原始 XML 仍會另外上傳成 artifact 供需要時下載。`publish` job 只有在 `push` 事件（非 PR）且 `test` 通過後才會執行，發行套件改用 `Publish-PSResource`（`Microsoft.PowerShell.PSResourceGet`）取代已過時的 `Publish-Module`（`PowerShellGet` v2）。
+GitHub Actions（`.github/workflows/powershell.yml`）會在 `test` job 執行完整測試，並用 [`dorny/test-reporter`](https://github.com/dorny/test-reporter) 解析 `testResults.xml`（JUnitXml 格式）產生可展開的完整測試報告，掛在該次 workflow run 的 Checks／Summary 頁籤，列出每一項測試（含通過的），不用下載檔案就能看；原始 XML 仍會另外上傳成 artifact 供需要時下載。`publish` job 只有在 `push` 事件（非 PR）且 `test` 通過後才會執行，發行套件改用 `Publish-PSResource`（`Microsoft.PowerShell.PSResourceGet`）取代已過時的 `Publish-Module`（`PowerShellGet` v2）；發行前會先用 `Find-PSResource` 檢查同版號是否已存在於來源上，存在就直接跳過（不會像 `Publish-PSResource` 本身那樣因為版號重複而讓整個 job 失敗），需要重新發行請先在 `ValhallaToolkits.psd1` 調整 `ModuleVersion`。
 
 撰寫測試過程中發現並修正了幾個 PowerShell「管線單一/空結果會被攤平成純量」造成的既有問題（`Get-AllContainerIP`、`Get-HyperVHost` 內部組陣列與回傳時都補上 `@(...)` 搭配 `return ,`，確保 0 筆、1 筆、多筆的情況都能正確保留為陣列；`Set-Host` 組合 hosts 內容時同樣補上 `@(...)`，避免內容剛好剩一行時 `+=` 變成字串串接把整份內容擠成一行）。對應的回歸測試已保留在 `Containers.Tests.ps1`、`Hosts.Tests.ps1` 中，涵蓋 0 筆／1 筆／多筆等邊界情況。
 
