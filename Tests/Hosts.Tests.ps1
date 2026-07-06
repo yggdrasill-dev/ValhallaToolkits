@@ -3,8 +3,12 @@ BeforeAll {
 
     # CI 的 runner 沒有安裝 Hyper-V 模組，Get-VM 完全不存在，Pester 沒有東西可以
     # Mock 就會直接丟 CommandNotFoundException；補一個空樁函式讓 Mock 有目標可以接管。
+    # 必須用 global: 作用域——Mock -ModuleName 是從目標模組自己的 scope 往上找到
+    # global scope 為止，找不到只定義在這個 BeforeAll/script scope 的函式。
+    $script:definedGetVmStub = $false
     if (-not (Get-Command Get-VM -ErrorAction SilentlyContinue)) {
-        function Get-VM { }
+        function global:Get-VM { }
+        $script:definedGetVmStub = $true
     }
 
     Import-Module (Join-Path $moduleRoot 'Containers.psm1') -Force
@@ -14,6 +18,10 @@ BeforeAll {
 AfterAll {
     Remove-Module Hosts -ErrorAction SilentlyContinue
     Remove-Module Containers -ErrorAction SilentlyContinue
+
+    if ($script:definedGetVmStub) {
+        Remove-Item function:global:Get-VM -ErrorAction SilentlyContinue
+    }
 }
 
 Describe 'Get-HyperVHost' {
