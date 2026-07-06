@@ -4,19 +4,34 @@ ValhallaToolkits 是一組以 PowerShell 撰寫的開發輔助命令，包含 Do
 
 ## 快速開始
 
-先建立 Valhalla-PS repository（若已存在可略過）：
+先註冊 Valhalla-PS repository（若已存在可略過）：
 
 ```powershell
-if (-not (Get-PSRepository -Name 'Valhalla-PS' -ErrorAction SilentlyContinue)) {
-    Register-PSRepository -Name 'Valhalla-PS' -SourceLocation 'https://www.myget.org/F/valhalla-ps/api/v3/index.json' -InstallationPolicy Trusted
+if (-not (Get-PSResourceRepository -Name 'Valhalla-PS' -ErrorAction SilentlyContinue)) {
+    Register-PSResourceRepository -Name 'Valhalla-PS' -Uri 'https://www.myget.org/F/valhalla-ps/api/v3/index.json' -Trusted
 }
 ```
 
-建立完成後即可安裝：
+註冊完成後即可安裝：
 
 ```powershell
-Install-Module -Name ValhallaToolkits -Repository Valhalla-PS
+Install-PSResource -Name ValhallaToolkits -Repository Valhalla-PS
 ```
+
+要更新到新版本時，直接重新執行 `Install-PSResource` 即可（新版本會安裝到獨立的版本資料夾，不會覆蓋舊版）：
+
+```powershell
+Install-PSResource -Name ValhallaToolkits -Repository Valhalla-PS
+Import-Module ValhallaToolkits -Force
+```
+
+想清掉舊版本可以用：
+
+```powershell
+Uninstall-PSResource -Name ValhallaToolkits -Version '<舊版號，例如 0.0.28>'
+```
+
+> 上述指令使用 `Microsoft.PowerShell.PSResourceGet`（PowerShellGet v3），取代已過時的 `PowerShellGet` v2（`Register-PSRepository`/`Install-Module`）。如果你的環境還沒裝這個模組：`Install-Module Microsoft.PowerShell.PSResourceGet -Force -Scope CurrentUser`。
 
 Valhalla-PS 套件來源：
 
