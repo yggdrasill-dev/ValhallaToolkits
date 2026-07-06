@@ -15,7 +15,7 @@ Describe 'ValhallaToolkits module manifest' {
             'Get-AllContainerIP', 'Get-HyperVHost', 'Set-DockerHost', 'Set-HyperVHost', 'Set-AllHost',
             'Update-ShellPath', 'Get-GitAttributeList', 'Get-GitAttribute', 'Push-Package',
             'Get-NugetMaxVersion', 'Get-IncrementVersion', 'Push-AlphaPackage', 'Get-PackageId',
-            'Set-DefaultNugetSource', 'Set-MergeKubeconfig', 'Export-Kubeconfig', 'Export-Kubeconfig2',
+            'Set-DefaultNugetSource', 'Set-MergeKubeconfig', 'Export-KubeconfigFromSecret', 'Export-KubeconfigFromToken',
             'Export-CurrentKubeconfig', 'Switch-KubeContext', 'Switch-KubeNamespace', 'Merge-Kubeconfig'
         )
 

@@ -250,22 +250,26 @@ Set-MergeKubeconfig -NewKubeConfig .\other-kubeconfig.yaml
 Merge-Kubeconfig -NewKubeConfig .\other-kubeconfig.yaml
 ```
 
-#### Export-Kubeconfig
+#### Export-KubeconfigFromSecret
 
-用途：使用 service account secret 內容匯出 kubeconfig。
+用途：使用 service account 綁定的 Secret 內容匯出 kubeconfig（適用會自動幫 service account 建立長期 token Secret 的舊版 Kubernetes）。
+
+> 前身為 `Export-Kubeconfig`，v0.0.29 改名。
 
 ```powershell
-Export-Kubeconfig -Namespace dev -AccountName deploy-bot
-Export-Kubeconfig -Namespace dev -AccountName deploy-bot -ContextName dev-cluster | Set-Content .\kubeconfig.yaml
+Export-KubeconfigFromSecret -Namespace dev -AccountName deploy-bot
+Export-KubeconfigFromSecret -Namespace dev -AccountName deploy-bot -ContextName dev-cluster | Set-Content .\kubeconfig.yaml
 ```
 
-#### Export-Kubeconfig2
+#### Export-KubeconfigFromToken
 
-用途：使用 `kubectl create token` 產生 token 並匯出 kubeconfig。
+用途：使用 `kubectl create token`（Kubernetes 1.24+ TokenRequest API）產生短期 token 並匯出 kubeconfig。
+
+> 前身為 `Export-Kubeconfig2`，v0.0.29 改名。
 
 ```powershell
-Export-Kubeconfig2 -Namespace dev -AccountName deploy-bot
-Export-Kubeconfig2 -Namespace dev -AccountName deploy-bot -Duration 24h | Set-Content .\kubeconfig.yaml
+Export-KubeconfigFromToken -Namespace dev -AccountName deploy-bot
+Export-KubeconfigFromToken -Namespace dev -AccountName deploy-bot -Duration 24h | Set-Content .\kubeconfig.yaml
 ```
 
 #### Export-CurrentKubeconfig
@@ -304,7 +308,7 @@ Kubernetes 相關命令實作在 [ValhallaToolkits/Kubernetes.psm1](ValhallaTool
 - `Configuration`：`Read-Configuration`/`Write-Configuration`
 - `Containers`：`Get-AllContainerIP`（Mock `docker`）
 - `Hosts`：`Get-HyperVHost`（Mock `Get-VM`）、`Set-Host`、`Set-DockerHost`/`Set-HyperVHost`/`Set-AllHost`（Mock 檔案 I/O 與內部函式，不會真的寫入 hosts 檔）
-- `Kubernetes`：`Switch-KubeContext`/`Switch-KubeNamespace`/`Export-CurrentKubeconfig`/`Export-Kubeconfig(2)`/`Set-MergeKubeconfig`（Mock `kubectl`，`Set-MergeKubeconfig` 另外把 `$env:UserProfile` 導向 `$TestDrive`，不會動到真實 kubeconfig）
+- `Kubernetes`：`Switch-KubeContext`/`Switch-KubeNamespace`/`Export-CurrentKubeconfig`/`Export-KubeconfigFromSecret`/`Export-KubeconfigFromToken`/`Set-MergeKubeconfig`（Mock `kubectl`，`Set-MergeKubeconfig` 另外把 `$env:UserProfile` 導向 `$TestDrive`，不會動到真實 kubeconfig）
 - 模組清單驗證
 
 ```powershell

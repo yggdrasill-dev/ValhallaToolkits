@@ -62,12 +62,12 @@ service account 所在的 Kubernetes namespace。
 輸出的 context 名稱；未提供時沿用目前 kubectl context。
 
 .EXAMPLE
-Export-Kubeconfig -Namespace dev -AccountName deploy-bot
+Export-KubeconfigFromSecret -Namespace dev -AccountName deploy-bot
 
 .OUTPUTS
 System.String
 #>
-function Export-Kubeconfig {
+function Export-KubeconfigFromSecret {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory, ValueFromPipeline)]
@@ -152,12 +152,12 @@ service account 所在的 Kubernetes namespace。
 kubectl create token 使用的 token 有效期限，預設為 87600h。
 
 .EXAMPLE
-Export-Kubeconfig2 -Namespace dev -AccountName deploy-bot -Duration 24h
+Export-KubeconfigFromToken -Namespace dev -AccountName deploy-bot -Duration 24h
 
 .OUTPUTS
 System.String
 #>
-function Export-Kubeconfig2 {
+function Export-KubeconfigFromToken {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory, ValueFromPipeline)]

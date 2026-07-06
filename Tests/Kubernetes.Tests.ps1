@@ -43,7 +43,7 @@ Describe 'Export-CurrentKubeconfig' {
     }
 }
 
-Describe 'Export-Kubeconfig2' {
+Describe 'Export-KubeconfigFromToken' {
     It 'builds a kubeconfig using a kubectl-created token' {
         Mock -CommandName kubectl -ModuleName Kubernetes -MockWith {
             $joined = $args -join ' '
@@ -64,7 +64,7 @@ clusters:
             }
         }
 
-        $result = Export-Kubeconfig2 -Namespace dev -AccountName deploy-bot -Duration 1h
+        $result = Export-KubeconfigFromToken -Namespace dev -AccountName deploy-bot -Duration 1h
         $parsed = $result | ConvertFrom-Yaml
 
         $parsed.'current-context' | Should -Be 'dev-cluster'
@@ -97,14 +97,14 @@ clusters:
             }
         }
 
-        $result = Export-Kubeconfig2 -Namespace dev -AccountName deploy-bot -ContextName custom-context
+        $result = Export-KubeconfigFromToken -Namespace dev -AccountName deploy-bot -ContextName custom-context
         $parsed = $result | ConvertFrom-Yaml
 
         $parsed.'current-context' | Should -Be 'custom-context'
     }
 }
 
-Describe 'Export-Kubeconfig' {
+Describe 'Export-KubeconfigFromSecret' {
     It 'builds a kubeconfig using the service account secret token' {
         Mock -CommandName kubectl -ModuleName Kubernetes -MockWith {
             $joined = $args -join ' '
@@ -129,7 +129,7 @@ clusters:
             }
         }
 
-        $result = Export-Kubeconfig -Namespace dev -AccountName deploy-bot
+        $result = Export-KubeconfigFromSecret -Namespace dev -AccountName deploy-bot
         $parsed = $result | ConvertFrom-Yaml
 
         $parsed.'current-context' | Should -Be 'dev-cluster'
