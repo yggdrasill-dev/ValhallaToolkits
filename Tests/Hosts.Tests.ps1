@@ -1,5 +1,12 @@
 BeforeAll {
     $moduleRoot = Resolve-Path (Join-Path $PSScriptRoot '..\ValhallaToolkits')
+
+    # CI 的 runner 沒有安裝 Hyper-V 模組，Get-VM 完全不存在，Pester 沒有東西可以
+    # Mock 就會直接丟 CommandNotFoundException；補一個空樁函式讓 Mock 有目標可以接管。
+    if (-not (Get-Command Get-VM -ErrorAction SilentlyContinue)) {
+        function Get-VM { }
+    }
+
     Import-Module (Join-Path $moduleRoot 'Containers.psm1') -Force
     Import-Module (Join-Path $moduleRoot 'Hosts.psm1') -Force
 }
