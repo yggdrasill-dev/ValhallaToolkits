@@ -35,7 +35,7 @@ Get-HyperVHost
 System.Management.Automation.PSCustomObject[]
 #>
 function Get-HyperVHost {
-    $vms = Get-VM | select -ExpandProperty NetworkAdapters `
+    $vms = @(Get-VM | select -ExpandProperty NetworkAdapters `
     | % {
         $vmName = $_.VMName
 
@@ -56,13 +56,9 @@ function Get-HyperVHost {
                 Ip   = $_
             }
         }
-    }
+    })
 
-    if ($null -eq $vms) {
-        $vms = @();
-    }
-
-    return $vms
+    return , $vms
 }
 
 <#
@@ -107,14 +103,7 @@ function Set-AllHost {
     }
 
     $ips = Get-AllContainerIP
-    if ($null -eq $ips) {
-        $ips = @();
-    }
-
     $vms = Get-HyperVHost
-    if ($null -eq $vms) {
-        $vms = @();
-    }
 
     Set-Host -IPArray ($ips + $vms)
 }
@@ -159,7 +148,7 @@ function Set-Host {
 
     Get-Content $hostFilePath | Set-Content "$($env:USERPROFILE)\hostBackup"
 
-    $hostContent = Get-Content $hostFilePath | % {
+    $hostContent = @(Get-Content $hostFilePath | % {
         if (!$startIgnore) {
             $_
         }
@@ -184,7 +173,7 @@ function Set-Host {
             $startIgnore = $false
         }
 
-    }
+    })
 
     if ($findTag -eq $false) {
         $hostContent += "# Host IPs"

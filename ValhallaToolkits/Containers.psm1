@@ -15,7 +15,7 @@ function Get-AllContainerIP
 {
     $format = '{{.Name}},{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}'
 
-    $containers = docker ps -q `
+    $containers = @(docker ps -q `
     | % { docker inspect -f $format $_ } `
     | % {
         $a = $_.Trim('/').Split(',');
@@ -25,12 +25,7 @@ function Get-AllContainerIP
         };
 
         return $ret;
-    }
+    })
 
-    if ($null -eq $containers)
-    {
-        $containers = @();
-    }
-
-    return $containers;
+    return , $containers;
 }

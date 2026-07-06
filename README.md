@@ -294,6 +294,38 @@ Switch-KubeNamespace -Namespace backend
 
 Kubernetes 相關命令實作在 [ValhallaToolkits/Kubernetes.psm1](ValhallaToolkits/Kubernetes.psm1#L1)。
 
+## 測試
+
+測試使用 [Pester](https://pester.dev/)（v5）。純邏輯命令直接測試，會呼叫 `docker`/`kubectl`/`Get-VM`/檔案系統的命令則用 `Mock` 隔離外部依賴，涵蓋所有模組：
+
+- `NugetTool`：`Get-IncrementVersion`、`Get-PackageId`、`Get-NugetSource`、`Get-NugetMaxVersion`
+- `Environment`：`Update-ShellPath`
+- `git`：`Get-GitAttribute(List)`
+- `Configuration`：`Read-Configuration`/`Write-Configuration`
+- `Containers`：`Get-AllContainerIP`（Mock `docker`）
+- `Hosts`：`Get-HyperVHost`（Mock `Get-VM`）、`Set-Host`、`Set-DockerHost`/`Set-HyperVHost`/`Set-AllHost`（Mock 檔案 I/O 與內部函式，不會真的寫入 hosts 檔）
+- `Kubernetes`：`Switch-KubeContext`/`Switch-KubeNamespace`/`Export-CurrentKubeconfig`/`Export-Kubeconfig(2)`/`Set-MergeKubeconfig`（Mock `kubectl`，`Set-MergeKubeconfig` 另外把 `$env:UserProfile` 導向 `$TestDrive`，不會動到真實 kubeconfig）
+- 模組清單驗證
+
+```powershell
+Invoke-Pester -Path .\Tests
+```
+
+若要產生測試報告（CI 也是用同樣方式）：
+
+```powershell
+$config = New-PesterConfiguration
+$config.Run.Path = '.\Tests'
+$config.TestResult.Enabled = $true
+$config.TestResult.OutputFormat = 'JUnitXml'
+$config.TestResult.OutputPath = 'testResults.xml'
+Invoke-Pester -Configuration $config
+```
+
+GitHub Actions（`.github/workflows/powershell.yml`）會在 `test` job 執行完整測試，並用 [`dorny/test-reporter`](https://github.com/dorny/test-reporter) 解析 `testResults.xml`（JUnitXml 格式）產生可展開的完整測試報告，掛在該次 workflow run 的 Checks／Summary 頁籤，列出每一項測試（含通過的），不用下載檔案就能看；原始 XML 仍會另外上傳成 artifact 供需要時下載。`publish` job 只有在 `push` 事件（非 PR）且 `test` 通過後才會執行，發行套件改用 `Publish-PSResource`（`Microsoft.PowerShell.PSResourceGet`）取代已過時的 `Publish-Module`（`PowerShellGet` v2）。
+
+撰寫測試過程中發現並修正了幾個 PowerShell「管線單一/空結果會被攤平成純量」造成的既有問題（`Get-AllContainerIP`、`Get-HyperVHost` 內部組陣列與回傳時都補上 `@(...)` 搭配 `return ,`，確保 0 筆、1 筆、多筆的情況都能正確保留為陣列；`Set-Host` 組合 hosts 內容時同樣補上 `@(...)`，避免內容剛好剩一行時 `+=` 變成字串串接把整份內容擠成一行）。對應的回歸測試已保留在 `Containers.Tests.ps1`、`Hosts.Tests.ps1` 中，涵蓋 0 筆／1 筆／多筆等邊界情況。
+
 ## 已知限制
 
 - `Set-AllHost`、`Set-DockerHost`、`Set-HyperVHost` 與 `Set-MergeKubeconfig` 都會修改本機狀態，執行前請確認目前 shell 有足夠權限。
